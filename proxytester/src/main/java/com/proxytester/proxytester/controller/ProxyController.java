@@ -1,6 +1,7 @@
 package com.proxytester.proxytester.controller;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.apache.http.HttpHost;
@@ -31,16 +32,20 @@ public class ProxyController {
 
     @RequestMapping(value = "/proxy", method = RequestMethod.POST)
     public ResponseEntity<String> testProxy(@RequestBody ProxyModel proxy) {
-        String proxyHost = proxy.ip;
-        int proxyPort = Integer.parseInt(proxy.port);
-        String username = proxy.username;
-        String password = proxy.password;
-        String targetUrl = proxy.url;
+        String proxyHost = "";
+        int proxyPort = 999999999;
+        String username = "";
+        String password = "";
+        String targetUrl = "";
 
-        // Set up proxy
+        // Check payload for valid input
+        if (proxyHost.isEmpty() || proxyPort <= 0 || proxyPort > 65535
+                || username.isEmpty() || password.isEmpty() || targetUrl.isEmpty()) {
+            return ResponseEntity.ok("Invalid payload: Missing or incorrect parameters");
+        }
+
+        // Set up proxy and proxy authentication
         HttpHost prxy = new HttpHost(proxyHost, proxyPort, "http");
-
-        // Set up credentials for the proxy
         BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(
                 new AuthScope(proxyHost, proxyPort),
@@ -54,32 +59,35 @@ public class ProxyController {
                 .build();
 
         try {
-            // Create HTTP GET request
+            // create GET request
             HttpGet httpGet = new HttpGet(targetUrl);
             HttpResponse response = httpClient.execute(httpGet);
 
-            // Read and print the response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            StringBuilder responseContent = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                responseContent.append(line);
-            }
-            
-            // Close the HTTP client
-            httpClient.close();
+            // use try-with-resources for auto closing of BufferedReader
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+                StringBuilder responseContent = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    responseContent.append(line);
+                }
 
-            // Check if the response contains the <h1>ERROR</h1> tag
-            if (responseContent.toString().contains("<h1>ERROR</h1>")) {
-                System.out.println("Error page detected: <h1>ERROR</h1> found in the response.");
-                return ResponseEntity.ok("Bad");
-            } else {
-                System.out.println("No error found in the response.");
-                return ResponseEntity.ok("Good");
+                // Check if the response contains the <h1>ERROR</h1>
+                if (responseContent.toString().contains("<h1>ERROR</h1>")) {
+                    return ResponseEntity.status(400).body("Bad");
+                } else {
+                    return ResponseEntity.ok("Good");
+                }
             }
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            return ResponseEntity.ok("Error");
+            System.err.println("Error during proxy test: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        } finally {
+            // close HTTP client
+            try {
+                httpClient.close();  
+            } catch (IOException e) {
+                System.err.println("Error closing HTTP client: " + e.getMessage());
+            }
         }
 
     }
