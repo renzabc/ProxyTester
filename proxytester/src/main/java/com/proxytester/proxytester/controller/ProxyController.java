@@ -31,15 +31,11 @@ public class ProxyController {
 
     @RequestMapping(value = "/proxy", method = RequestMethod.POST)
     public ResponseEntity<String> testProxy(@RequestBody ProxyModel proxy) {
-        // System.out.println("ip: " + proxy.ip);
-        // System.out.println("port: " + proxy.port);
-        // System.out.println("username: " + proxy.username);
-        // System.out.println("password: " + proxy.password);
         String proxyHost = proxy.ip;
         int proxyPort = Integer.parseInt(proxy.port);
         String username = proxy.username;
         String password = proxy.password;
-        String targetUrl = proxy.url; // Change to the URL you want to test
+        String targetUrl = proxy.url;
 
         // Set up proxy
         HttpHost prxy = new HttpHost(proxyHost, proxyPort, "http");
@@ -69,9 +65,10 @@ public class ProxyController {
             while ((line = reader.readLine()) != null) {
                 responseContent.append(line);
             }
+            
             // Close the HTTP client
             httpClient.close();
-            
+
             // Check if the response contains the <h1>ERROR</h1> tag
             if (responseContent.toString().contains("<h1>ERROR</h1>")) {
                 System.out.println("Error page detected: <h1>ERROR</h1> found in the response.");
