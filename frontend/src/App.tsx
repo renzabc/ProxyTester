@@ -108,10 +108,24 @@ function App() {
             <div id='buttons' className='text-blue-100 flex flex-row justify-center'>
               <div className='flex justify-between w-[80vw] gap-2'>
                 <button id='copyBad' className='border border-blue-300 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-2'
-                  onClick={() => { }}
+                  onClick={() => {
+                    let string = ''
+                    badList.map((items, index) => {
+                      string = string.concat(items)
+                      string = string.concat("\n")
+                    })
+                    navigator.clipboard.writeText(string)
+                  }}
                 >Copy Bad Proxies</button>
                 <button id='copyGood' className='border border-blue-300 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-2'
-                  onClick={() => { }}
+                  onClick={() => {
+                    let string = ''
+                    goodList.map((items, index) => {
+                      string = string.concat(items)
+                      string = string.concat("\n")
+                    })
+                    navigator.clipboard.writeText(string)
+                  }}
                 >Copy Good Proxies</button>
                 <button id='reset' className='border border-blue-300 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-2'
                   onClick={() => { }}
