@@ -35,7 +35,7 @@ function App() {
     // Test all proxies on the List
     for (let i = 0; i < proxyArray.length; i++) {
       let prox = proxyArray[i].split(':')
-      let result = await testProxy(prox[0], prox[1], prox[2], prox[3], 'https://example.com')
+      let result = await testProxy(prox[0], prox[1], prox[2], prox[3], url)
 
       if (String(result) === 'Good') {
         // Add to goodList and update state incrementally
@@ -71,8 +71,11 @@ function App() {
 
 
 
+  const [url, setUrl] = useState('')
 
-
+  let handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUrl(event.target.value)
+  }
 
   return (
     <>
@@ -90,7 +93,7 @@ function App() {
                   value={proxyList} onChange={handleTextChange}
                 ></textarea>
                 <div className='flex flex-row gap-2 -mt-0.5'>
-                  <Input className=' text-white border-blue-300 ' placeholder='enter a url' />
+                  <Input className=' text-white border-blue-300 ' placeholder='https://example.com' value={url} onChange={handleUrlChange} />
                   <button className='text-blue-100 border border-blue-100 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-2 '
                     onClick={() => { parseList(proxyList) }}
                   >GO</button>
