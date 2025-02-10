@@ -13,6 +13,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,18 +31,22 @@ public class ProxyController {
         return "Hello World";
     }
 
+    @CrossOrigin(origins = "http://localhost:5173")
     @RequestMapping(value = "/proxy", method = RequestMethod.POST)
     public ResponseEntity<String> testProxy(@RequestBody ProxyModel proxy) {
-        String proxyHost = "";
-        int proxyPort = 999999999;
-        String username = "";
-        String password = "";
-        String targetUrl = "";
+        String proxyHost = proxy.ip;
+        int proxyPort = Integer.parseInt(proxy.port);
+        String username = proxy.username;
+        String password = proxy.password;
+        String targetUrl = proxy.url;
 
         // Check payload for valid input
         if (proxyHost.isEmpty() || proxyPort <= 0 || proxyPort > 65535
-                || username.isEmpty() || password.isEmpty() || targetUrl.isEmpty()) {
+                || username.isEmpty() || password.isEmpty()) {
             return ResponseEntity.ok("Invalid payload: Missing or incorrect parameters");
+        }
+        if (targetUrl.isEmpty()) {
+            targetUrl = "https://google.com";
         }
 
         // Set up proxy and proxy authentication
@@ -84,7 +89,7 @@ public class ProxyController {
         } finally {
             // close HTTP client
             try {
-                httpClient.close();  
+                httpClient.close();
             } catch (IOException e) {
                 System.err.println("Error closing HTTP client: " + e.getMessage());
             }
