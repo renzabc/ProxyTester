@@ -21,11 +21,12 @@ function App() {
 
   let parseList = async (list: string) => {
     // Remove empty lines
-    let formattedList = list.split('\n').filter(line => line.trim() !== '').join('\n')
+    let cleanedList = list.split('\n').filter(line => line.trim() !== '').join('\n')
     // Display Removed lines in textarea
-    setProxyList(formattedList)
+    setProxyList(cleanedList)
 
-    let proxyArray = formattedList.split("/n")
+    let proxyArray = cleanedList.split("\n")
+    console.log("Array Length: ", proxyArray.length)
     // Test all proxies on the List
     for (let i = 0; i < proxyArray.length; i++) {
       let prox = proxyArray[i].split(':')
@@ -37,6 +38,7 @@ function App() {
       else if (String(result) == 'Bad') {
 
       }
+      console.log('LAP')
     }
 
   }
