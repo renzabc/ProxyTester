@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 
@@ -11,7 +7,6 @@ function App() {
   const [proxyList, setProxyList] = useState('')
   const [badList, setBadList] = useState<string[]>([])
   const [goodList, setGoodList] = useState<string[]>([])
-  // const [displayGood, setDisplayGood] = useState(<></>)
 
   const displayGood = goodList.map((proxyString, index) => (
     <p className='text-green-400 px-1.5'>{proxyString}</p>
