@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -9,15 +9,17 @@ import { Input } from "@/components/ui/input"
 
 function App() {
   const [proxyList, setProxyList] = useState('')
+  const [badList, setBadList] = useState<string[]>([])
+  const [goodList, setGoodList] = useState<string[]>([])
+  // const [displayGood, setDisplayGood] = useState(<></>)
 
+  const displayGood = goodList.map((proxyString, index) => (
+    <p className='text-green-400 px-1.5'>{proxyString}</p>
+  ))
 
   let handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setProxyList(event.target.value)
   }
-
-  // get text from textarea element
-
-  // remove black lines
 
   let parseList = async (list: string) => {
     // Remove empty lines
@@ -25,26 +27,30 @@ function App() {
     // Display Removed lines in textarea
     setProxyList(cleanedList)
 
+    setGoodList([]) // Clear goodList
+    setBadList([])
+
     let proxyArray = cleanedList.split("\n")
-    console.log("Array Length: ", proxyArray.length)
+
     // Test all proxies on the List
     for (let i = 0; i < proxyArray.length; i++) {
       let prox = proxyArray[i].split(':')
-      console.log(proxyArray[i], prox)
-      let result = await testProxy(prox[0], prox[1], prox[2], prox[3], 'https://google.com')
-      if (String(result) == 'Good') {
-        console.log(proxyArray[i])
-      }
-      else if (String(result) == 'Bad') {
+      let result = await testProxy(prox[0], prox[1], prox[2], prox[3], 'https://example.com')
 
+      if (String(result) === 'Good') {
+        // Add to goodList and update state incrementally
+        setGoodList((prevGoodList) => [...prevGoodList, proxyArray[i]])
+      } else if (String(result) === 'Bad') {
+        // Add to badList and update state incrementally
+        setBadList((prevBadList) => [...prevBadList, proxyArray[i]])
       }
-      console.log('LAP')
     }
-
   }
 
+
+
   let testProxy = async (ip: string, port: string, username: string, password: string, url: string) => {
-    return fetch("http://127.0.0.1:8081/test/proxy", {
+    let result = await fetch("http://127.0.0.1:8081/test/proxy", {
       method: "POST",
       body: JSON.stringify({
         "ip": `${ip}`,
@@ -57,6 +63,10 @@ function App() {
         "Content-type": "application/json; charset=UTF-8"
       }
     });
+
+    let res = await result.text()
+
+    return res
   }
 
 
@@ -79,17 +89,17 @@ function App() {
                 <textarea className=' text-white rounded-md border border-blue-300 h-[33vh] max-h-[33vh] px-1.5 ' placeholder="Paste Proxies Here."
                   value={proxyList} onChange={handleTextChange}
                 ></textarea>
-                <div className='flex flex-row gap-2'>
+                <div className='flex flex-row gap-2 -mt-0.5'>
                   <Input className=' text-white border-blue-300 ' placeholder='enter a url' />
-                  <button className='text-blue-100 border border-blue-100 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-2'
+                  <button className='text-blue-100 border border-blue-100 bg-neutral-900 hover:bg-neutral-800 rounded-lg px-2 '
                     onClick={() => { parseList(proxyList) }}
                   >GO</button>
                 </div>
               </div>
             </div>
 
-            <div id='result' className='border border-blue-500 w-[90vw] h-[40vh] max-h-[40vh] rounded-md'>
-
+            <div id='result' className='border border-blue-500 w-[90vw] h-[40vh] max-h-[40vh] rounded-md overflow-auto'>
+              {displayGood}
             </div>
 
             <div id='buttons' className='text-blue-100 flex flex-row justify-center'>
